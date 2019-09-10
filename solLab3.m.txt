@@ -1,0 +1,129 @@
+function solLab3()
+% n: numarul de exemple ale multimii de antrenare
+n = 10;
+
+%c: numarul de ore alocate saptamanal de catre un student
+c = 10;
+
+% Apelul punctului a)
+[X, Y] = genereazaMultimeAntrenare(n, c);
+
+% Apelul punctului b)
+[Ystar] = aplicaClasificatorBayesian(X,c);
+
+% Apelul punctului c)
+[eroare] = calculeazaEroareMisclasare(Y,Ystar);
+
+% Apelul punctului d)
+nrExemple = [10 10^2 10^3 10^4 10^5 10^6];
+ploteazaEroareMisclasare(nrExemple,c)
+
+% Punctul e: se considera valori diferite pentru c; graficele sunt similare
+% Se observa convergenta erorii empirice catre eroarea teoretica cand 
+% n (numarul de exemple din multimea de antrenare) ia valori mari.
+
+% Punctul f) - in acest caz eroarea empirica (calculata pe baza multimilor
+% de antrenare) nu converge la eroarea teoretica
+p = 0.5;
+
+figure(2)
+% graficul erorii teoretice
+eroareTeoretica = 0.305785;
+semilogx(nrExemple, ones(1,length(nrExemple)) * eroareTeoretica,'r');
+hold on
+% se calculeaza eroarea de misclasare pentru multimi de antrenare
+% de dimensiuni diferite date in vectorul nrExemple
+eroareMisclasare = zeros(1,length(nrExemple));
+for i = 1:length(nrExemple)
+    n = nrExemple(i);
+    % generarea multimii de antrenare avand n exemple
+    X = 4*c * rand(n,1);
+    Y = double(rand(n,1) < p);
+    % punctul b
+    Ystar = aplicaClasificatorBayesian(X,c);
+    % punctul c
+    eroareMisclasare(i) = calculeazaEroareMisclasare(Y,Ystar);
+end
+
+% graficul erorilor de misclasare determinate pe baza unor multimi de
+% antrenare(avand ca dimensiuni valorile din vectorul nrExemple)
+semilogx(nrExemple, eroareMisclasare,'b');
+title('Evolutia erorii de misclasare');
+
+% Punctul g): se reiau punctele a)-e) rezolvate mai sus pentru multimea de 
+% antrenare generata folosind functia de mai jos
+% [X, Y] = genereazaMultimeAntrenare2(n, c);
+end
+
+% Punctul a)
+function [X, Y] = genereazaMultimeAntrenare(n, c)
+
+% X este repartizat uniform pe intervalul [0,4c]
+% Daca X este o matrice de dimensiune m x n avand ca elemente valori de 
+% selectie asupra unei variabile aleatoare repartizat uniform pe [a,b] atunci 
+% X = (b - a)*rand(m,n) + a;
+X = 4*c * rand(n,1);
+
+% Eticheta Y asociata lui X: are repartitia Bernoulli de parametru 
+% p = eta(x), pentru X = x.
+Y = double(rand(n,1) < (X./(X+c)));
+
+end
+
+% Punctul b)
+function [Ystar] = aplicaClasificatorBayesian(X,c)
+% X > c echivalent cu X./(X+c) > 1/2
+% Ystar: eticheta prezisa de clasificatorul bayesian g*(X).
+Ystar = double(X > c);
+end
+
+% Punctul c)
+function [eroare] = calculeazaEroareMisclasare(Y,Ystar)
+% eroarea = numarul punctelor gresit clasate/numarul total de puncte
+eroare = sum(Y ~= Ystar)/length(Y);
+end
+
+% Punctul d)
+function ploteazaEroareMisclasare(nrExemple,c)
+
+%graficul erorii teoretice
+figure(1)
+eroareTeoretica = 0.305785;
+semilogx(nrExemple, ones(1,length(nrExemple)) * eroareTeoretica,'r');
+hold on
+% se calculeaza eroarea de misclasare pentru multimi de antrenare
+% de dimensiuni diferite date in vectorul nrExemple
+eroareMisclasare = zeros(1,length(nrExemple));
+for i = 1:length(nrExemple)
+    n = nrExemple(i);
+    % punctul a
+    [X, Y] = genereazaMultimeAntrenare(n,c);
+    % punctul b
+    Ystar = aplicaClasificatorBayesian(X,c);
+    % punctul c
+    eroareMisclasare(i) = calculeazaEroareMisclasare(Y,Ystar);
+end
+
+% graficul erorilor de misclasare determinate pe baza unor multimi de
+% antrenare(avand ca dimensiuni valorile din vectorul nrExemple)
+semilogx(nrExemple, eroareMisclasare,'b');
+title('Evolutia erorii de misclasare');
+% legend('eroarea teoretica','eroarea empirica');
+% axis([min(volum) max(volum) 0 1]);
+
+end
+
+% Punctul g)
+function [X, Y] = genereazaMultimeAntrenare2(n, c)
+
+% X este repartizat exponential de parametru lambda = c; 
+% lambda reprezinta media unei variabile repartizate exponential(lambda)
+lambda = c;
+X = exprnd(lambda,n,1);
+
+% Eticheta Y asociata lui X: are repartitia Bernoulli de parametru 
+% p = eta(x), pentru X = x.
+Y = double(rand(n,1) < (X./(X+c)));
+
+end
+
